@@ -36,8 +36,8 @@
               </div>
             </div>
             <div v-else>
-              <i v-if="column.key === 'percentChange24h' && crypto[column.key] < 0" class="fas fa-arrow-down text-danger"></i>
-              <i v-else-if="column.key === 'percentChange24h' && crypto[column.key] > 0" class="fas fa-arrow-up text-success"></i>
+              <i v-if="column.key === 'percentChange24h' && crypto.changeDirection24h === 'down'" class="fas fa-arrow-down text-danger"></i>
+              <i v-else-if="column.key === 'percentChange24h' && crypto.changeDirection24h === 'up'" class="fas fa-arrow-up text-success"></i>
               <span v-if="column.key === 'percentChange24h'">{{ crypto[column.key] }}</span>
               <span v-else>{{ crypto[column.key] }}</span>
             </div>
