@@ -112,7 +112,7 @@ export default {
   methods: {
     fetchCryptocurrencies() {
       const cache = setupCache({
-        maxAge: 15 * 60 * 10000, // Cache responses for 15 minutes
+        maxAge: 15 * 60 * 10000,
       });
 
       const api = axios.create({
@@ -133,7 +133,7 @@ export default {
           this.cryptocurrencies = response.data.map((crypto, index) => ({
             id: crypto.id,
             logo: crypto.image,
-            number: index + 1, // Add the numbering
+            number: index + 1,
             name: crypto.name,
             percentChange24h: crypto.price_change_percentage_24h.toFixed(2),
             marketPrice: crypto.current_price,
@@ -149,7 +149,6 @@ export default {
     },
 
     handleScroll() {
-      // Check if user has scrolled to the bottom of the page
       if (
         window.innerHeight + window.scrollY >= document.body.offsetHeight &&
         !this.isLoading &&
@@ -172,7 +171,7 @@ export default {
       const params = {
         vs_currency: 'usd',
         per_page: this.perPage,
-        page: this.page + 1, // Increment the page number
+        page: this.page + 1,
       };
 
       this.isLoading = true;
@@ -183,9 +182,9 @@ export default {
           const newCryptocurrencies = response.data.map((crypto, index) => ({
             id: crypto.id,
             logo: crypto.image,
-            number: (this.page - 1) * this.perPage + index + 1, // Update the numbering
+            number: (this.page - 1) * this.perPage + index + 1,
             name: crypto.name,
-            percentChange24h: crypto.price_change_percentage_24h.toFixed(2) + '%', // Round to 2 decimal places and add '%'
+            percentChange24h: crypto.price_change_percentage_24h.toFixed(2) + '%',
             marketPrice: crypto.current_price,
             volume24h: crypto.total_volume,
           }));
@@ -195,7 +194,7 @@ export default {
           if (newCryptocurrencies.length < this.perPage) {
             this.isEndOfList = true;
           } else {
-            this.isEndOfList = false; // Reset the flag
+            this.isEndOfList = false;
           }
 
           this.page++;
@@ -239,9 +238,8 @@ export default {
 }
 
 body {
-  background-image: url('./assets/images/crypto-image1.jpg');
+  background-image: url('./assets/images/crypto-image.jpg');
   background-repeat: repeat;
-  /* Additional background properties */
 }
 
 .table {
@@ -260,8 +258,8 @@ th {
 }
 
 thead tr {
-  height: 60px !important; /* Set the height to 60 pixels */
-  text-align: center; /* Center the column text */
+  height: 60px !important;
+  text-align: center;
   vertical-align: middle;
 }
 
