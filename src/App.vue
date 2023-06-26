@@ -19,27 +19,29 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(crypto, index) in cryptocurrencies" :key="index">
+        <tr v-for="(cryptocurrency, index) in cryptocurrencies" :key="index">
           <td v-for="column in visibleColumns" :key="column.key" class="text-center">
             <div v-if="column.key === 'number' && !isMobile">
-              {{ crypto[column.key] }}
+              {{ cryptocurrency[column.key] }}
             </div>
             <div v-else-if="column.key === 'logo'">
               <div v-if="!isMobile">
-                <img :src="crypto[column.key]" alt="Crypto Logo" height="50">
+                <img :src="cryptocurrency[column.key]" alt="Crypto Logo" height="50">
               </div>
               <div v-else>
                 <div class="d-flex align-items-left justify-content-start">
-                  <img :src="crypto[column.key]" alt="Crypto Logo" height="50">
-                  <span class="crypto-info">{{ crypto.name }}</span>
+                  <img :src="cryptocurrency[column.key]" alt="Crypto Logo" height="50">
                 </div>
               </div>
             </div>
+            <div v-else-if="column.key === 'name' && !isMobile">
+              {{ cryptocurrency[column.key] }}
+            </div>
             <div v-else>
-              <i v-if="column.key === 'percentChange24h' && crypto.changeDirection24h === 'down'" class="fas fa-arrow-down text-danger"></i>
-              <i v-else-if="column.key === 'percentChange24h' && crypto.changeDirection24h === 'up'" class="fas fa-arrow-up text-success"></i>
-              <span v-if="column.key === 'percentChange24h'">{{ crypto[column.key] }}</span>
-              <span v-else>{{ crypto[column.key] }}</span>
+              <i v-if="column.key === 'percentChange24h' && cryptocurrency.changeDirection24h === 'down'" class="fas fa-arrow-down text-danger"></i>
+              <i v-else-if="column.key === 'percentChange24h' && cryptocurrency.changeDirection24h === 'up'" class="fas fa-arrow-up text-success"></i>
+              <span v-if="column.key === 'percentChange24h'">{{ cryptocurrency[column.key] }}</span>
+              <span v-else>{{ cryptocurrency[column.key] }}</span>
             </div>
           </td>
         </tr>
@@ -72,22 +74,11 @@ export default {
       ],
     };
   },
-  created() {
-    this.isMobile = this.checkIsMobile();
-    this.fetchCryptocurrencies();
-  },
-  mounted() {
-    window.addEventListener('scroll', this.handleScroll);
-    window.addEventListener('resize', this.handleResize);
-  },
-  beforeUnmount() {
-    window.removeEventListener('scroll', this.handleScroll);
-    window.removeEventListener('resize', this.handleResize);
-  },
+
   computed: {
     visibleColumns() {
       if (this.isMobile) {
-        return this.tableColumns.filter((column) => column.showDesktop || column.key === 'logo' || column.key === 'number');
+        return this.tableColumns.filter((column) => column.showDesktop || column.key === 'logo' || column.key === 'number' || column.key === 'name');
       } else {
         return this.tableColumns;
       }
@@ -109,6 +100,7 @@ export default {
       };
     },
   },
+
   methods: {
     fetchCryptocurrencies() {
       const cache = setupCache({
@@ -130,16 +122,24 @@ export default {
       api
         .get(apiUrl, { params })
         .then((response) => {
-          this.cryptocurrencies = response.data.map((crypto, index) => ({
-            id: crypto.id,
-            logo: crypto.image,
-            number: index + 1,
-            name: crypto.name,
-            percentChange24h: crypto.price_change_percentage_24h.toFixed(2),
-            marketPrice: crypto.current_price,
-            volume24h: crypto.total_volume,
-            changeDirection24h: crypto.price_change_percentage_24h < 0 ? 'down' : 'up',
-          }));
+          console.log('Response:', response);
+
+          this.cryptocurrencies = response.data.map((crypto, index) => {
+            console.log('Crypto:', crypto);
+
+            return {
+              id: crypto.id,
+              logo: crypto.image,
+              number: index + 1,
+              name: crypto.name,
+              percentChange24h: crypto.price_change_percentage_24h.toFixed(2) + '%',
+              marketPrice: '$' + crypto.current_price.toLocaleString(),
+              volume24h: '$' + crypto.total_volume.toLocaleString(),
+              changeDirection24h: crypto.price_change_percentage_24h < 0 ? 'down' : 'up',
+            };
+          });
+
+          this.sortByColumn('number');
           this.isLoading = false;
         })
         .catch((error) => {
@@ -167,6 +167,7 @@ export default {
     },
 
     fetchMoreCryptocurrencies() {
+      console.log('Fetching more cryptocurrencies...');
       const apiUrl = 'https://api.coingecko.com/api/v3/coins/markets';
       const params = {
         vs_currency: 'usd',
@@ -177,52 +178,98 @@ export default {
       this.isLoading = true;
 
       axios
-        .get(apiUrl, { params })
-        .then((response) => {
-          const newCryptocurrencies = response.data.map((crypto, index) => ({
-            id: crypto.id,
-            logo: crypto.image,
-            number: (this.page - 1) * this.perPage + index + 1,
-            name: crypto.name,
-            percentChange24h: crypto.price_change_percentage_24h.toFixed(2) + '%',
-            marketPrice: crypto.current_price,
-            volume24h: crypto.total_volume,
-          }));
+    .get(apiUrl, { params })
+    .then((response) => {
+      console.log('Response2:', response);
 
-          this.cryptocurrencies = [...this.cryptocurrencies, ...newCryptocurrencies];
+      const newCryptocurrencies = response.data.map((crypto, index) => ({
+        id: crypto.id,
+        logo: crypto.image,
+        number: this.cryptocurrencies.length + index + 1,
+        name: crypto.name,
+        percentChange24h: crypto.price_change_percentage_24h.toFixed(2) + '%',
+        marketPrice: '$' + crypto.current_price.toLocaleString(),
+        volume24h:'$' + crypto.total_volume.toLocaleString(),
+        changeDirection24h: crypto.price_change_percentage_24h < 0 ? 'down' : 'up',
+      }));
 
-          if (newCryptocurrencies.length < this.perPage) {
-            this.isEndOfList = true;
-          } else {
-            this.isEndOfList = false;
-          }
+      console.log('New Cryptocurrencies:', newCryptocurrencies);
 
-          this.page++;
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          console.error('Failed to fetch more cryptocurrencies:', error);
-          this.isLoading = false;
-        });
-    },
+      this.cryptocurrencies = [...this.cryptocurrencies, ...newCryptocurrencies];
 
-    sortByColumn(columnKey) {
-      const column = this.tableColumns.find((col) => col.key === columnKey);
-      column.sortDirection = column.sortDirection === 'asc' ? 'desc' : 'asc';
+      if (newCryptocurrencies.length < this.perPage) {
+        this.isEndOfList = true;
+      } else {
+        this.isEndOfList = false;
+      }
 
-      this.cryptocurrencies.sort((a, b) => {
-        const valueA = a[columnKey];
-        const valueB = b[columnKey];
-
-        if (typeof valueA === 'number' && typeof valueB === 'number') {
-          return column.sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-        } else {
-          return column.sortDirection === 'asc'
-            ? valueA.toString().localeCompare(valueB, undefined, { sensitivity: 'base' })
-            : valueB.toString().localeCompare(valueA, undefined, { sensitivity: 'base' });
+      this.tableColumns.forEach((column) => {
+        if (column.sortable) {
+          column.sortDirection = 'asc';
         }
       });
-    },
+
+      this.page++;
+      this.isLoading = false;
+    })
+    .catch((error) => {
+      console.error('Failed to fetch more cryptocurrencies:', error);
+      this.isLoading = false;
+    });
+},
+
+sortByColumn(columnKey) {
+  const column = this.tableColumns.find((col) => col.key === columnKey);
+  column.sortDirection = column.sortDirection === 'asc' ? 'desc' : 'asc';
+
+  this.cryptocurrencies.sort((a, b) => {
+    const valueA = columnKey === 'marketPrice' || columnKey === 'volume24h'
+      ? parseFloat(a[columnKey].replace('$', '').replace(/,/g, ''))
+      : a[columnKey];
+    const valueB = columnKey === 'marketPrice' || columnKey === 'volume24h'
+      ? parseFloat(b[columnKey].replace('$', '').replace(/,/g, ''))
+      : b[columnKey];
+
+    if (column.sortDirection === 'asc') {
+      if (columnKey === 'percentChange24h') {
+        return parseFloat(valueA) - parseFloat(valueB);
+      } else {
+        return this.compareValues(valueA, valueB);
+      }
+    } else {
+      if (columnKey === 'percentChange24h') {
+        return parseFloat(valueB) - parseFloat(valueA);
+      } else {
+        return this.compareValues(valueB, valueA);
+      }
+    }
+  });
+},
+
+compareValues(valueA, valueB) {
+  if (valueA < valueB) {
+    return -1;
+  } else if (valueA > valueB) {
+    return 1;
+  } else {
+    return 0;
+  }
+},
+  },
+
+  created() {
+    this.isMobile = this.checkIsMobile();
+    this.fetchCryptocurrencies();
+  },
+
+  mounted() {
+    window.addEventListener('scroll', this.handleScroll);
+    window.addEventListener('resize', this.handleResize);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
+    window.removeEventListener('resize', this.handleResize);
   },
 };
 </script>
@@ -239,7 +286,7 @@ export default {
 
 body {
   background-image: url('./assets/images/crypto-image.jpg');
-  background-repeat: repeat;
+  background-size: contain;
 }
 
 .table {
@@ -270,14 +317,6 @@ h1.text-center {
   text-shadow: 2px 4px 7px;
 }
 
-i:hover {
-  cursor: pointer !important;
-}
-
-.crypto-info {
-  margin-left: 10px;
-}
-
 .text-center {
   text-align: center;
   vertical-align: middle;
@@ -291,21 +330,11 @@ i:hover {
   margin-left: 0.5rem;
 }
 
-.sort-icon.fa-sort {
-  opacity: 0.4;
-}
-
-.sort-icon.fa-sort-up {
-  color: green;
-  opacity: 1;
-}
-
-.sort-icon.fa-sort-down {
-  color: red;
-  opacity: 1;
-}
-
 .fa-solid {
   border-bottom: 1px solid #000000;
+}
+
+.fa-solid:hover {
+  cursor: pointer;
 }
 </style>
