@@ -1,0 +1,72 @@
+#app {
+  font-family: Inter,-apple-system,BlinkMacSystemFont,segoe ui,Roboto,Helvetica,Arial,sans-serif;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+}
+
+body {
+  background-image: url('./images/crypto-image.jpg');
+  background-size: contain;
+}
+
+.table {
+  background-color: #ffffff99;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.table thead th,
+.table tbody td {
+  background-color: #ffffff99;
+}
+
+th {
+  font-size: 18px;
+}
+
+thead tr {
+  height: 60px !important;
+  text-align: center;
+  vertical-align: middle;
+}
+
+h1.text-center {
+  font-size: 55px;
+  font-weight: bold;
+  color: #00FA9B;
+  text-shadow: 2px 4px 7px;
+}
+
+.text-center {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.sort-icon {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+  transition: opacity 0.2s;
+  margin-left: 0.5rem;
+}
+
+.fa-solid {
+  border-bottom: 1px solid #000000;
+}
+
+.fa-solid:hover {
+  cursor: pointer;
+}
+
+tr.hovered {
+  background-color: #00000033;
+}
+
+.currency-symbol {
+  color: #808a9d;
+  margin-left: 5px;
+}
